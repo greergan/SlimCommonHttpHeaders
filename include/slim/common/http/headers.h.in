@@ -13,7 +13,7 @@ namespace slim::common::http {
 	struct Headers {
 		Headers();
 		slim::SlimValue append(std::string_view _key, std::string_view _value);
-		std::unordered_map<std::string, std::string>& entries();
+		const std::unordered_map<std::string, std::string>& entries() const;
 		slim::SlimValue erase(std::string_view _key);
 		slim::SlimValue get(std::string_view _key) const;
 		slim::SlimValue has(std::string_view _key) const;

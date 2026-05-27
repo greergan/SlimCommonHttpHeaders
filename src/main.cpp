@@ -22,7 +22,7 @@ slim::SlimValue slim::common::http::Headers::append(std::string_view _key, std::
 	return results;
 }
 
-std::unordered_map<std::string, std::string>& slim::common::http::Headers::entries() {
+const std::unordered_map<std::string, std::string>& slim::common::http::Headers::entries() const {
 	return __headers;
 }
 
