@@ -26,20 +26,16 @@ const std::unordered_map<std::string, std::string>& slim::common::http::Headers:
 	return __headers;
 }
 
-slim::SlimValue slim::common::http::Headers::get(std::string_view _key) const {
-	slim::SlimValue results = has(_key);
-	if(results) {
-		results = __headers.at(std::string(_key));
+std::string_view slim::common::http::Headers::get(std::string_view _key) const {
+	auto it = __headers.find(std::string(_key));
+	if(it != __headers.end()) {
+		return it->second;
 	}
-	return results;
+	return "";
 }
 
-slim::SlimValue slim::common::http::Headers::has(std::string_view _key) const {
-	slim::SlimValue results = false;
-	if(__headers.contains(std::string(_key))) {
-		results = true;
-	}
-	return results;
+bool slim::common::http::Headers::has(std::string_view _key) const {
+	return __headers.contains(std::string(_key)) ? true : false;
 }
 
 slim::SlimValue slim::common::http::Headers::set(std::string_view _key, std::string_view _value) {
