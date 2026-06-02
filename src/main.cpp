@@ -3,45 +3,70 @@
 #include <unordered_map>
 #include <slim/common/http/headers.h>
 
-namespace slim::common::http::header {
-	slim::SlimValue valid_key(std::string_view _key);
-}
-
-slim::SlimValue slim::common::http::header::valid_key(std::string_view _key) {
-	slim::SlimValue results = true;
-	return results;
+namespace {
+	std::string to_lower(std::string_view _string) {
+        std::string result(_string);
+        for(auto& c : result) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+        return result;
+    }
+	slim::SlimValue validkey(std::string_view key) {
+		slim::SlimValue result = to_lower(key);
+		if(!result) {
+			result.set_error("header key must not be empty");
+		}
+		return result;
+	}
 }
 
 slim::common::http::Headers::Headers() {}
 
-slim::SlimValue slim::common::http::Headers::append(std::string_view _key, std::string_view _value) {
-	slim::SlimValue results = header::valid_key(_key);
-	if(results) {
-		__headers[std::string(_key)] = std::string(_value);
+slim::SlimValue slim::common::http::Headers::append(std::string_view key, std::string_view value) {
+	slim::SlimValue result = validkey(key);
+	if(result) {
+		if(value.empty()) {
+			result = false;
+			result.set_error("header value must not be empty");
+			return result;
+		}
+
+		auto currentvalue = headers[result.to_string()];
+		if(currentvalue.empty()) {
+			currentvalue = std::string(value);
+		}
+		else {
+			currentvalue += ", " + std::string(value);
+		}
+		headers[result.to_string()] = currentvalue;
 	}
-	return results;
+	return result;
 }
 
 const std::unordered_map<std::string, std::string>& slim::common::http::Headers::entries() const {
-	return __headers;
+	return headers;
 }
 
-std::string_view slim::common::http::Headers::get(std::string_view _key) const {
-	auto it = __headers.find(std::string(_key));
-	if(it != __headers.end()) {
-		return it->second;
+slim::SlimValue slim::common::http::Headers::get(std::string_view key) const {
+	slim::SlimValue result = validkey(key);
+	if(result) {
+		auto it = headers.find(result.to_string());
+		result = it != headers.end() ? result = it->second : result = false;
 	}
-	return "";
+	return result;
 }
 
-bool slim::common::http::Headers::has(std::string_view _key) const {
-	return __headers.contains(std::string(_key)) ? true : false;
+bool slim::common::http::Headers::has(std::string_view key) const {
+	return headers.contains(to_lower(key));
 }
 
-slim::SlimValue slim::common::http::Headers::set(std::string_view _key, std::string_view _value) {
-	slim::SlimValue results = header::valid_key(_key);
-	if(results) {
-		__headers[std::string(_key)] = std::string(_value);
+slim::SlimValue slim::common::http::Headers::set(std::string_view key, std::string_view value) {
+	slim::SlimValue result = validkey(key);
+	if(result) {
+		if(value.empty()) {
+			result = false;
+			result.set_error("header value must not be empty");
+			return result;
+		}
+		headers[result.to_string()] = std::string(value);
 	}
-	return results;
+	return result;
 }

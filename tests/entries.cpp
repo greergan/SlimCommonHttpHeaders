@@ -11,10 +11,10 @@ TEST_CASE("Headers::entries", "[headers]") {
         slim::common::http::Headers headers;
         headers.set("Content-Type", "application/json");
         headers.set("X-Request-Id", "abc123");
-        auto& e = headers.entries();
-        REQUIRE(e.size() == 2);
-        REQUIRE(e.at("Content-Type") == "application/json");
-        REQUIRE(e.at("X-Request-Id") == "abc123");
+        auto& entries = headers.entries();
+        REQUIRE(entries.size() == 2);
+        REQUIRE(entries.at("content-type") == "application/json");
+        REQUIRE(entries.at("x-request-id") == "abc123");
     }
 
     SECTION("overwrite does not grow entry count") {

@@ -15,12 +15,12 @@ namespace slim::common::http {
 		slim::SlimValue append(std::string_view _key, std::string_view _value);
 		const std::unordered_map<std::string, std::string>& entries() const;
 		slim::SlimValue erase(std::string_view _key);
-		std::string_view get(std::string_view _key) const;
+		slim::SlimValue get(std::string_view _key) const;
 		bool has(std::string_view _key) const;
 		slim::SlimValue set(std::string_view _key, std::string_view _value);
 
 		private:
-			std::unordered_map<std::string, std::string> __headers;
+			std::unordered_map<std::string, std::string> headers;
 	};
 };
 
