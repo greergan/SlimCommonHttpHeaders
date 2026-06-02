@@ -30,3 +30,17 @@ TEST_CASE("Headers::append and Headers::get", "[headers]") {
     REQUIRE(headers.append("X-Custom", "value"));
     REQUIRE(headers.get("X-Custom") == "value, value");
 }
+
+TEST_CASE("Headers::append and Headers::has and Headers::get and Headers::erase", "[headers]") {
+    slim::common::http::Headers headers;
+    REQUIRE(headers.append("X-Custom", "value"));
+    REQUIRE(headers.has("x-CuStoM"));
+    REQUIRE(headers.has("x-cuStoM"));
+    REQUIRE(headers.get("X-Custom") == "value");
+    REQUIRE(headers.append("X-Custom", "value"));
+    REQUIRE(headers.get("X-Custom") == "value, value");
+    REQUIRE(headers.erase("x-custom") == 1);
+    REQUIRE_FALSE(headers.has("x-CustoM"));
+    REQUIRE_FALSE(headers.get("X-Custom"));
+    REQUIRE(headers.erase("x-custom") == 0);
+}

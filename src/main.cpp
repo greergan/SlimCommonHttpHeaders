@@ -45,6 +45,14 @@ const std::unordered_map<std::string, std::string>& slim::common::http::Headers:
 	return headers;
 }
 
+slim::SlimValue slim::common::http::Headers::erase(std::string_view key) {
+	slim::SlimValue result = validkey(key);
+	if(result) {
+		result = headers.erase(result.to_string());
+	}
+	return result;
+}
+
 slim::SlimValue slim::common::http::Headers::get(std::string_view key) const {
 	slim::SlimValue result = validkey(key);
 	if(result) {
