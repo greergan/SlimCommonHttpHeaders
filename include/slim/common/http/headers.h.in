@@ -1,27 +1,35 @@
-#ifndef __SLIM__COMMON__HTTP__HEADERS__H
-#define __SLIM__COMMON__HTTP__HEADERS__H
+#ifndef SLIM_COMMON_HTTP_HEADERS_H
+#define SLIM_COMMON_HTTP_HEADERS_H
 
-#include <string>
+#include <memory>
 #include <string_view>
-#include <unordered_map>
-#include <slim/SlimValue.hpp>
+#include <vector>
 
-#define SLIMCOMMONHTTPHEADERS_VERSION "@SLIMCOMMONHTTPHEADERS_VERSION@"
+#include <slim/common/http/header.h>
+#include <slim/common/http/cookie/store.h>
+
+#define SLIMCOMMONHTTPHEADERS_VERSION  "@SLIMCOMMONHTTPHEADERS_VERSION@"
 #define SLIMCOMMONHTTPHEADERS_GIT_HASH "@SLIMCOMMONHTTPHEADERS_GIT_HASH@"
 
 namespace slim::common::http {
-	struct Headers {
-		Headers();
-		slim::SlimValue append(std::string_view key, std::string_view _value);
-		const std::unordered_map<std::string, std::string>& entries() const;
-		slim::SlimValue erase(std::string_view key);
-		slim::SlimValue get(std::string_view key) const;
-		bool has(std::string_view key) const;
-		slim::SlimValue set(std::string_view key, std::string_view _value);
 
-		private:
-			std::unordered_map<std::string, std::string> headers;
-	};
+class Headers {
+public:
+    HeaderStatus append(std::string_view key, std::string_view value) noexcept;
+    HeaderStatus erase(std::string_view key) noexcept;
+    HeaderStatus get(std::string_view key) noexcept;
+    HeaderStatus has(std::string_view key) noexcept;
+    HeaderStatus set(std::string_view key, std::string_view value) noexcept;
+
+    const std::vector<std::shared_ptr<Header>>&  entries() const noexcept { return headers; }
+    const std::shared_ptr<CookieStore>& cookies() const noexcept { return cookies; }
+
+
+private:
+    std::vector<std::shared_ptr<Header>> headers;
+    std::shared_ptr<CookieStore>         cookies;
 };
 
-#endif
+} // namespace slim::common::http
+
+#endif // SLIM_COMMON_HTTP_HEADERS_H
