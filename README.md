@@ -21,7 +21,6 @@ CI/CD supplied by unified workflows provided by [SlimLibraryPackager](https://co
   - [Constructors and object lifetime](#constructors-and-object-lifetime)
   - [Setters](#setters)
   - [Getters](#getters)
-  - [Cookie integration](#cookie-integration)
 - [Building](#building)
 - [Dependencies](#dependencies)
 - [Examples](#examples)
@@ -87,16 +86,7 @@ slim::common::http::Headers headers;
 | `std::shared_ptr<Header> get(std::string_view key) const noexcept` | The first stored header matching `key` (case-insensitive), or `nullptr` if not found |
 | `bool has(std::string_view key) const noexcept` | Whether a header matching `key` is present |
 | `const std::vector<std::shared_ptr<Header>>& entries() const noexcept` | The full underlying collection of stored headers, in insertion order |
-
-[↑ Top](#table-of-contents)
-
-### Cookie integration
-
-| Method | Returns |
-|--------|---------|
-| `const std::shared_ptr<CookieStore>& get_cookies() const noexcept` | The backing `CookieStore` populated from every `Set-Cookie` / `Cookie` header seen by `append()` or `set()` |
-
-`Set-Cookie` and `Cookie` are still tracked as ordinary headers and appear in `entries()`; the `CookieStore` is a parallel, structured view maintained alongside them. If cookie parsing fails, `append()`/`set()` return `HeaderStatus::InvalidCookie` and the header is **not** added.
+| `const std::shared_ptr<CookieStore>& get_cookies() const noexcept` | The full underlying collection of stored cookies |
 
 [↑ Top](#table-of-contents)
 
