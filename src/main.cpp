@@ -42,10 +42,12 @@ HeaderStatus Headers::append(std::string_view key, std::string_view value) noexc
     if (iequals(key, "set-cookie")) {
         auto e = cookies->set(value);
         if(e != CookieStatus::OK) return HeaderStatus::InvalidCookie;
+        return HeaderStatus::OK;
     }
     if (iequals(key, "cookie")) {
         auto e = cookies->set_cookies(value);
         if(e != CookieStatus::OK) return HeaderStatus::InvalidCookie;
+        return HeaderStatus::OK;
     }
 
     if (auto h = get(key)) return h->set_value(value);
@@ -88,10 +90,12 @@ HeaderStatus Headers::set(std::string_view key, std::string_view value) noexcept
     if (iequals(key, "set-cookie")) {
         auto e = cookies->set(value);
         if(e != CookieStatus::OK) return HeaderStatus::InvalidCookie;
+        return HeaderStatus::OK;
     }
     if (iequals(key, "cookie")) {
         auto e = cookies->set_cookies(value);
         if(e != CookieStatus::OK) return HeaderStatus::InvalidCookie;
+        return HeaderStatus::OK;
     }
 
     if (auto h = get(key)) return h->replace_value(value);

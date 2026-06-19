@@ -127,7 +127,8 @@ TEST_CASE("Headers::get_cookies is never null", "[headers][cookies]") {
     CHECK(h.get_cookies()->entries().empty());
 }
 
-TEST_CASE("Headers::append('Set-Cookie', ...) populates the cookie store and the raw header", "[headers][cookies][set-cookie]") {
+TEST_CASE("Headers::append('Set-Cookie', ...) populates the cookie store but is not added as a header",
+          "[headers][cookies][set-cookie]") {
     Headers h;
     REQUIRE(h.append("Set-Cookie", "id=123; Path=/; Secure") == HeaderStatus::OK);
 
@@ -141,22 +142,21 @@ TEST_CASE("Headers::append('Set-Cookie', ...) populates the cookie store and the
         CHECK(cookies[0]->get_secure());
     }
 
-    SECTION("the raw header is also recorded") {
-        auto entry = h.get("Set-Cookie");
-        REQUIRE(entry != nullptr);
-        REQUIRE(entry->get_value().size() == 1);
-        CHECK(entry->get_value()[0] == "id=123; Path=/; Secure");
+    SECTION("no raw header is recorded") {
+        CHECK_FALSE(h.has("Set-Cookie"));
+        CHECK(h.get("Set-Cookie") == nullptr);
+        CHECK(h.entries().empty());
     }
 }
 
-TEST_CASE("Headers::append('Set-Cookie', ...) called twice records two cookies but one header entry with two values",
+TEST_CASE("Headers::append('Set-Cookie', ...) called twice records two cookies and adds no header entry",
           "[headers][cookies][set-cookie]") {
     Headers h;
     REQUIRE(h.append("Set-Cookie", "id=123") == HeaderStatus::OK);
     REQUIRE(h.append("Set-Cookie", "session=abc") == HeaderStatus::OK);
 
-    CHECK(h.entries().size() == 1);
-    REQUIRE(h.get("Set-Cookie")->get_value().size() == 2);
+    CHECK(h.entries().empty());
+    CHECK_FALSE(h.has("Set-Cookie"));
 
     auto& cookies = h.get_cookies()->entries();
     REQUIRE(cookies.size() == 2);
@@ -172,7 +172,8 @@ TEST_CASE("Headers::append('Set-Cookie', ...) with a malformed cookie string fai
     CHECK(h.get_cookies()->entries().empty());
 }
 
-TEST_CASE("Headers::append('Cookie', ...) parses each pair into the cookie store and keeps the raw header", "[headers][cookies][cookie]") {
+TEST_CASE("Headers::append('Cookie', ...) parses each pair into the cookie store and adds no header",
+          "[headers][cookies][cookie]") {
     Headers h;
     REQUIRE(h.append("Cookie", "a=1; b=2") == HeaderStatus::OK);
 
@@ -185,18 +186,21 @@ TEST_CASE("Headers::append('Cookie', ...) parses each pair into the cookie store
         CHECK(cookies[1]->get_value() == "2");
     }
 
-    SECTION("the raw header is preserved verbatim") {
-        auto entry = h.get("Cookie");
-        REQUIRE(entry != nullptr);
-        REQUIRE(entry->get_value().size() == 1);
-        CHECK(entry->get_value()[0] == "a=1; b=2");
+    SECTION("no raw header is recorded") {
+        CHECK_FALSE(h.has("Cookie"));
+        CHECK(h.get("Cookie") == nullptr);
+        CHECK(h.entries().empty());
     }
 }
 
-TEST_CASE("Headers::append('Cookie', ...) is case-insensitive on the header key", "[headers][cookies][cookie]") {
+TEST_CASE("Headers::append('Cookie', ...) is case-insensitive on the header key and still adds no header",
+          "[headers][cookies][cookie]") {
     Headers h;
     REQUIRE(h.append("cOOkie", "a=1") == HeaderStatus::OK);
+
     CHECK(h.get_cookies()->entries().size() == 1);
+    CHECK(h.entries().empty());
+    CHECK_FALSE(h.has("Cookie"));
 }
 
 TEST_CASE("Headers::append('Cookie', ...) with a malformed pair fails and may leave earlier pairs already applied",
@@ -209,20 +213,20 @@ TEST_CASE("Headers::append('Cookie', ...) with a malformed pair fails and may le
     CHECK(h.get_cookies()->entries().size() == 1);
     CHECK(h.get_cookies()->entries()[0]->get_name() == "a");
 
-    // Because append returned early on failure, no "Cookie" header entry was recorded.
+    // No "Cookie" header entry was recorded, whether append failed or succeeded.
     CHECK_FALSE(h.has("Cookie"));
 }
 
-TEST_CASE("Headers::set('Set-Cookie', ...) also feeds the cookie store and replaces the header value", "[headers][cookies][set]") {
+TEST_CASE("Headers::set('Set-Cookie', ...) also feeds the cookie store but never appears as a header",
+          "[headers][cookies][set]") {
     Headers h;
     REQUIRE(h.set("Set-Cookie", "id=123") == HeaderStatus::OK);
     REQUIRE(h.set("Set-Cookie", "id=456") == HeaderStatus::OK);
 
-    SECTION("the header has only the latest raw value") {
-        auto entry = h.get("Set-Cookie");
-        REQUIRE(entry != nullptr);
-        REQUIRE(entry->get_value().size() == 1);
-        CHECK(entry->get_value()[0] == "id=456");
+    SECTION("no header entry exists for Set-Cookie") {
+        CHECK_FALSE(h.has("Set-Cookie"));
+        CHECK(h.get("Set-Cookie") == nullptr);
+        CHECK(h.entries().empty());
     }
 
     SECTION("the cookie store reflects the latest cookie for that name (same name/domain/path replaces in place)") {
@@ -232,11 +236,30 @@ TEST_CASE("Headers::set('Set-Cookie', ...) also feeds the cookie store and repla
     }
 }
 
-TEST_CASE("Headers::erase does not affect the cookie store", "[headers][erase][cookies]") {
+TEST_CASE("Headers::erase has no effect on the cookie store, since cookie headers are never stored as ordinary headers",
+          "[headers][erase][cookies]") {
     Headers h;
     REQUIRE(h.append("Set-Cookie", "id=123") == HeaderStatus::OK);
+
+    // Set-Cookie was never added as a header entry, so erasing it is a no-op.
     REQUIRE(h.erase("Set-Cookie") == HeaderStatus::OK);
 
     CHECK_FALSE(h.has("Set-Cookie"));
     CHECK(h.get_cookies()->entries().size() == 1);
+}
+
+TEST_CASE("Mixing ordinary headers with cookie headers keeps only the ordinary ones in entries()",
+          "[headers][cookies][entries]") {
+    Headers h;
+    REQUIRE(h.append("Accept", "text/html") == HeaderStatus::OK);
+    REQUIRE(h.append("Set-Cookie", "id=123") == HeaderStatus::OK);
+    REQUIRE(h.append("Cookie", "a=1") == HeaderStatus::OK);
+    REQUIRE(h.append("Vary", "Accept-Encoding") == HeaderStatus::OK);
+
+    const auto& entries = h.entries();
+    REQUIRE(entries.size() == 2);
+    CHECK(entries[0]->get_name() == "Accept");
+    CHECK(entries[1]->get_name() == "Vary");
+
+    CHECK(h.get_cookies()->entries().size() == 2);
 }
