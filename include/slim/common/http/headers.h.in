@@ -17,17 +17,15 @@ class Headers {
 public:
     HeaderStatus append(std::string_view key, std::string_view value) noexcept;
     HeaderStatus erase(std::string_view key) noexcept;
-    HeaderStatus get(std::string_view key) noexcept;
-    HeaderStatus has(std::string_view key) noexcept;
+    std::shared_ptr<Header> get(std::string_view key) const noexcept;
+    bool has(std::string_view key) const noexcept;
     HeaderStatus set(std::string_view key, std::string_view value) noexcept;
-
     const std::vector<std::shared_ptr<Header>>&  entries() const noexcept { return headers; }
-    const std::shared_ptr<CookieStore>& cookies() const noexcept { return cookies; }
-
+    const std::shared_ptr<CookieStore>& get_cookies() const noexcept { return cookies; }
 
 private:
-    std::vector<std::shared_ptr<Header>> headers;
-    std::shared_ptr<CookieStore>         cookies;
+    std::vector<std::shared_ptr<Header>> headers{};
+    std::shared_ptr<CookieStore>         cookies{};
 };
 
 } // namespace slim::common::http
