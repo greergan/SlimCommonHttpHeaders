@@ -1,3 +1,5 @@
 # PackageName [minVersion [maxVersion]]
 SlimCommonHttpHeader
+#SlimCommonHttpCookie only required for tests
+SlimCommonHttpCookie
 SlimCommonHttpCookieStore
