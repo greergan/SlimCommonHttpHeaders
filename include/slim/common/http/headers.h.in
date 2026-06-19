@@ -25,7 +25,7 @@ public:
 
 private:
     std::vector<std::shared_ptr<Header>> headers{};
-    std::shared_ptr<CookieStore>         cookies{};
+    std::shared_ptr<CookieStore>         cookies{std::make_shared<CookieStore>()};
 };
 
 } // namespace slim::common::http
