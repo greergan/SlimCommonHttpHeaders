@@ -21,6 +21,7 @@ CI/CD supplied by unified workflows provided by [SlimLibraryPackager](https://co
   - [Constructors and object lifetime](#constructors-and-object-lifetime)
   - [Setters](#setters)
   - [Getters](#getters)
+  - [Serialization](#serialization)
 - [Building](#building)
 - [Dependencies](#dependencies)
 - [Examples](#examples)
@@ -34,6 +35,7 @@ This library provides a strict, validation-heavy collection type for managing mu
 - Automatic detection and parsing of `Set-Cookie` and `Cookie` headers into a dedicated [`CookieStore`](https://codeberg.org/greergan/SlimCommonHttpCookieStore)
 - Shared ownership of stored headers via `std::shared_ptr<Header>`
 - Status reporting via the same `HeaderStatus` enum used by [`SlimCommonHttpHeader`](https://codeberg.org/greergan/SlimCommonHttpHeader)
+- Wire-format serialization of the full collection, including cookies, via `serialize()`
 - Heavy use of `noexcept`
 
 [↑ Top](#table-of-contents)
@@ -48,6 +50,7 @@ This library provides a strict, validation-heavy collection type for managing mu
 | Cookie routing | `Set-Cookie` and `Cookie` headers are transparently parsed into the backing `CookieStore` |
 | Existence check | Quickly test whether a header name is present |
 | Removal | Erase all non-cookie headers matching a given name |
+| Serialization | Render the full collection, including cookies, as wire-format header lines |
 
 [↑ Top](#table-of-contents)
 
@@ -87,6 +90,16 @@ slim::common::http::Headers headers;
 | `bool has(std::string_view key) const noexcept` | Whether a header matching `key` is present |
 | `const std::vector<std::shared_ptr<Header>>& entries() const noexcept` | The full underlying collection of stored headers, in insertion order |
 | `const std::shared_ptr<CookieStore>& get_cookies() const noexcept` | The full underlying collection of stored cookies |
+
+[↑ Top](#table-of-contents)
+
+### Serialization
+
+| Method | Returns |
+|--------|---------|
+| `std::string serialize() const` | The full collection rendered as wire-format header lines (`Name: value1, value2\r\n`), followed by the serialized `CookieStore` and a final blank `\r\n` line terminator |
+
+`serialize()` walks `entries()` in insertion order, writing each header's name and comma-joined values, then appends the `CookieStore`'s own serialization, and finally appends a trailing `\r\n` to terminate the header block.
 
 [↑ Top](#table-of-contents)
 
@@ -157,6 +170,20 @@ headers.erase("Accept");
 for (const auto& h : headers.entries()) {
     // h->get_name(), h->get_value()
 }
+```
+
+```cpp
+// Serializing the full collection, including cookies, to wire format
+slim::common::http::Headers headers;
+headers.append("Accept", "text/html");
+headers.append("Accept", "application/json");
+headers.append("Vary", "Accept-Encoding");
+
+std::string wire = headers.serialize();
+// wire ==
+//   "Accept: text/html, application/json\r\n"
+//   "Vary: Accept-Encoding\r\n"
+//   "\r\n"
 ```
 
 [↑ Top](#table-of-contents)
