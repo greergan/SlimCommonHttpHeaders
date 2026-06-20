@@ -112,4 +112,17 @@ HeaderStatus Headers::set(std::string_view key, std::string_view value) noexcept
     return HeaderStatus::OK;
 }
 
+std::string Headers::serialize() const {
+    std::string result;
+
+    for (const auto& h : headers)
+        if (h) result += h->serialize();
+
+    if (cookies) result += cookies->serialize();
+
+    result.append("\r\n");
+
+    return result;
+}
+
 } // namespace slim::common::http

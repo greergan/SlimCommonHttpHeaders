@@ -22,6 +22,7 @@ public:
     HeaderStatus set(std::string_view key, std::string_view value) noexcept;
     const std::vector<std::shared_ptr<Header>>&  entries() const noexcept { return headers; }
     const std::shared_ptr<CookieStore>& get_cookies() const noexcept { return cookies; }
+    std::string serialize() const;
 
 private:
     std::vector<std::shared_ptr<Header>> headers{};

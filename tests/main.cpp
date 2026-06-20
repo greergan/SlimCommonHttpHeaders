@@ -263,3 +263,16 @@ TEST_CASE("Mixing ordinary headers with cookie headers keeps only the ordinary o
 
     CHECK(h.get_cookies()->entries().size() == 2);
 }
+
+TEST_CASE("Headers::serialize renders entries as wire-format header lines", "[headers][serialize]") {
+    Headers h;
+    REQUIRE(h.append("Accept", "text/html") == HeaderStatus::OK);
+    REQUIRE(h.append("Accept", "application/json") == HeaderStatus::OK);
+    REQUIRE(h.append("Vary", "Accept-Encoding") == HeaderStatus::OK);
+
+    const std::string expects = "Accept: text/html, application/json\r\n"
+                                 "Vary: Accept-Encoding\r\n"
+                                 "\r\n";
+
+    CHECK(h.serialize() == expects);
+}
