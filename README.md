@@ -111,7 +111,7 @@ This library is built using [SlimLibraryPackager](https://codeberg.org/greergan/
 
 ## Dependencies
 
-External package dependencies for this library are declared in the `required_packages` file at the repository root. This file is read by [SlimLibraryPackager](https://codeberg.org/greergan/SlimLibraryPackager) during the build process to resolve dependencies and install them if not present.
+External package dependencies for this library are declared in the [`required_packages`](https://codeberg.org/greergan/SlimCommonHttpHeaders/src/branch/master/required_packages) file at the repository root. This file is read by [SlimLibraryPackager](https://codeberg.org/greergan/SlimLibraryPackager) during the build process to resolve dependencies and install them if not present.
 
 ```
 SlimCommonHttpHeader
@@ -119,6 +119,10 @@ SlimCommonHttpHeader
 SlimCommonHttpCookie
 SlimCommonHttpCookieStore
 ```
+
+- [SlimCommonHttpHeader](https://codeberg.org/greergan/SlimCommonHttpHeader)
+- [SlimCommonHttpCookie](https://codeberg.org/greergan/SlimCommonHttpCookie) (only required for tests)
+- [SlimCommonHttpCookieStore](https://codeberg.org/greergan/SlimCommonHttpCookieStore)
 
 [↑ Top](#table-of-contents)
 
