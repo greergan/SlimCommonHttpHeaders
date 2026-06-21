@@ -1,6 +1,6 @@
 # PackageName [minVersion [maxVersion]]
-SlimCommonHttp
-SlimCommonHttpHeader
-SlimCommonHttpCookieStore
+SlimCommonHttp 0.1.0
+SlimCommonHttpHeader 0.9.2
+SlimCommonHttpCookieStore 0.9.2
 #only required for tests
-SlimCommonHttpCookie
+SlimCommonHttpCookie 0.9.3
