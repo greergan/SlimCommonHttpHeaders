@@ -7,6 +7,7 @@
 
 #include <slim/common/http/header.h>
 #include <slim/common/http/cookie/store.h>
+#include <slim/common/http/error_codes.h>
 
 #define SLIMCOMMONHTTPHEADERS_VERSION  "@SLIMCOMMONHTTPHEADERS_VERSION@"
 #define SLIMCOMMONHTTPHEADERS_GIT_HASH "@SLIMCOMMONHTTPHEADERS_GIT_HASH@"
@@ -15,11 +16,11 @@ namespace slim::common::http {
 
 class Headers {
 public:
-    HeaderStatus append(std::string_view key, std::string_view value) noexcept;
-    HeaderStatus erase(std::string_view key) noexcept;
+    ErrorStatus append(std::string_view key, std::string_view value) noexcept;
+    ErrorStatus erase(std::string_view key) noexcept;
     std::shared_ptr<Header> get(std::string_view key) const noexcept;
     bool has(std::string_view key) const noexcept;
-    HeaderStatus set(std::string_view key, std::string_view value) noexcept;
+    ErrorStatus set(std::string_view key, std::string_view value) noexcept;
     const std::vector<std::shared_ptr<Header>>&  entries() const noexcept { return headers; }
     const std::shared_ptr<CookieStore>& get_cookies() const noexcept { return cookies; }
     std::string serialize() const;

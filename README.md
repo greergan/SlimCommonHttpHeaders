@@ -17,6 +17,7 @@ CI/CD supplied by unified workflows provided by [SlimLibraryPackager](https://co
 - [Overview](#overview)
 - [Features](#features)
 - [Core API](#core-api)
+  - [ErrorStatus enum](#errorstatus-enum)
   - [Headers class](#headers-class)
   - [Constructors and object lifetime](#constructors-and-object-lifetime)
   - [Setters](#setters)
@@ -34,7 +35,7 @@ This library provides a strict, validation-heavy collection type for managing mu
 - Two distinct mutation semantics — `append()` for multi-value accumulation vs `set()` for replace-in-place
 - Automatic detection and parsing of `Set-Cookie` and `Cookie` headers into a dedicated [`CookieStore`](https://codeberg.org/greergan/SlimCommonHttpCookieStore)
 - Shared ownership of stored headers via `std::shared_ptr<Header>`
-- Status reporting via the same `HeaderStatus` enum used by [`SlimCommonHttpHeader`](https://codeberg.org/greergan/SlimCommonHttpHeader)
+- Status reporting via the same `ErrorStatus` enum used by [`SlimCommonHttpHeader`](https://codeberg.org/greergan/SlimCommonHttpHeader) and [`SlimCommonHttpCookieStore`](https://codeberg.org/greergan/SlimCommonHttpCookieStore), provided by [SlimCommonHttp](https://codeberg.org/greergan/SlimCommonHttp)
 - Wire-format serialization of the full collection, including cookies, via `serialize()`
 - Heavy use of `noexcept`
 
@@ -51,10 +52,17 @@ This library provides a strict, validation-heavy collection type for managing mu
 | Existence check | Quickly test whether a header name is present |
 | Removal | Erase all non-cookie headers matching a given name |
 | Serialization | Render the full collection, including cookies, as wire-format header lines |
+| Error model | Shared `ErrorStatus` enum, from [SlimCommonHttp](https://codeberg.org/greergan/SlimCommonHttp) |
 
 [↑ Top](#table-of-contents)
 
 ## Core API
+
+### ErrorStatus enum
+
+Provided by [SlimCommonHttp](https://codeberg.org/greergan/SlimCommonHttp) `ErrorStatus`.
+
+[↑ Top](#table-of-contents)
 
 ### Headers class
 
@@ -76,9 +84,11 @@ slim::common::http::Headers headers;
 
 | Method | Description |
 |--------|-------------|
-| `HeaderStatus append(std::string_view key, std::string_view value) noexcept` | If a header named `key` already exists, appends `value` onto it; otherwise creates a new header. If `key` is `Set-Cookie` or `Cookie`, also parses `value` into the backing `CookieStore` |
-| `HeaderStatus set(std::string_view key, std::string_view value) noexcept` | If a header named `key` already exists, replaces its value with `value`; otherwise creates a new header. If `key` is `Set-Cookie` or `Cookie`, also parses `value` into the backing `CookieStore` |
-| `HeaderStatus erase(std::string_view key) noexcept` | Removes every header matching `key` (case-insensitive) |
+| `ErrorStatus append(std::string_view key, std::string_view value) noexcept` | If a header named `key` already exists, appends `value` onto it; otherwise creates a new header. If `key` is `Set-Cookie` or `Cookie`, also parses `value` into the backing `CookieStore` |
+| `ErrorStatus set(std::string_view key, std::string_view value) noexcept` | If a header named `key` already exists, replaces its value with `value`; otherwise creates a new header. If `key` is `Set-Cookie` or `Cookie`, also parses `value` into the backing `CookieStore` |
+| `ErrorStatus erase(std::string_view key) noexcept` | Removes every header matching `key` (case-insensitive) |
+
+`Set-Cookie` and `Cookie` keys are routed to the backing `CookieStore`; on failure, `append()` and `set()` return the same `ErrorStatus` value the `CookieStore` itself produced — for example `ErrorStatus::CookieMalformedMissingEquals` for a malformed `Set-Cookie` string, or `ErrorStatus::CookieMalformedPairMissingEquals` for a malformed `Cookie` pair.
 
 [↑ Top](#table-of-contents)
 
@@ -111,15 +121,17 @@ This library is built using [SlimLibraryPackager](https://codeberg.org/greergan/
 
 ## Dependencies
 
-External package dependencies for this library are declared in the [`required_packages`](https://codeberg.org/greergan/SlimCommonHttpHeaders/src/branch/master/required_packages) file at the repository root. This file is read by [SlimLibraryPackager](https://codeberg.org/greergan/SlimLibraryPackager) during the build process to resolve dependencies and install them if not present.
+External package dependencies for this library are declared in the [`required_packages`](required_packages) file at the repository root. This file is read by [SlimLibraryPackager](https://codeberg.org/greergan/SlimLibraryPackager) during the build process to resolve dependencies and install them if not present.
 
 ```
+SlimCommonHttp
 SlimCommonHttpHeader
 #SlimCommonHttpCookie only required for tests
 SlimCommonHttpCookie
 SlimCommonHttpCookieStore
 ```
 
+- [SlimCommonHttp](https://codeberg.org/greergan/SlimCommonHttp)
 - [SlimCommonHttpHeader](https://codeberg.org/greergan/SlimCommonHttpHeader)
 - [SlimCommonHttpCookie](https://codeberg.org/greergan/SlimCommonHttpCookie) (only required for tests)
 - [SlimCommonHttpCookieStore](https://codeberg.org/greergan/SlimCommonHttpCookieStore)
@@ -132,8 +144,8 @@ SlimCommonHttpCookieStore
 // Setting ordinary headers
 slim::common::http::Headers headers;
 
-HeaderStatus e = headers.set("Content-Type", "application/json");
-if (e != HeaderStatus::OK) return e;
+ErrorStatus e = headers.set("Content-Type", "application/json");
+if (e != ErrorStatus::OK) return e;
 ```
 
 ```cpp
@@ -145,8 +157,8 @@ headers.append("Accept", "application/json");
 
 ```cpp
 // Set-Cookie headers are routed into the backing CookieStore automatically
-HeaderStatus e = headers.append("Set-Cookie", "session=abc123; Path=/; Secure; SameSite=Strict");
-if (e != HeaderStatus::OK) return e;
+ErrorStatus e = headers.append("Set-Cookie", "session=abc123; Path=/; Secure; SameSite=Strict");
+if (e != ErrorStatus::OK) return e;
 
 auto cookie = headers.get_cookies()->get("session");
 if (cookie) {

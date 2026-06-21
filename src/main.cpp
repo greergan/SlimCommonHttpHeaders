@@ -38,33 +38,25 @@ namespace {
     }
 } // namespace
 
-HeaderStatus Headers::append(std::string_view key, std::string_view value) noexcept {
-    if (iequals(key, "set-cookie")) {
-        auto e = cookies->set(value);
-        if(e != CookieStatus::OK) return HeaderStatus::InvalidCookie;
-        return HeaderStatus::OK;
-    }
-    if (iequals(key, "cookie")) {
-        auto e = cookies->set_cookies(value);
-        if(e != CookieStatus::OK) return HeaderStatus::InvalidCookie;
-        return HeaderStatus::OK;
-    }
+ErrorStatus Headers::append(std::string_view key, std::string_view value) noexcept {
+    if (iequals(key, "set-cookie")) return cookies->set(value);
+    if (iequals(key, "cookie"))     return cookies->set_cookies(value);
 
     if (auto h = get(key)) return h->set_value(value);
 
     auto new_header = std::make_shared<Header>();
 
     auto e = new_header->set_name(key);
-    if(e != HeaderStatus::OK) return e;
+    if(e != ErrorStatus::OK) return e;
 
     e = new_header->set_value(value);
-    if(e != HeaderStatus::OK) return e;
+    if(e != ErrorStatus::OK) return e;
 
     headers.push_back(std::move(new_header));
-    return HeaderStatus::OK;
+    return ErrorStatus::OK;
 }
 
-HeaderStatus Headers::erase(std::string_view key) noexcept {
+ErrorStatus Headers::erase(std::string_view key) noexcept {
     auto it = std::remove_if(headers.begin(), headers.end(),
         [&](const std::shared_ptr<Header>& h) {
             return iiequals(h->get_name(), key);
@@ -72,7 +64,7 @@ HeaderStatus Headers::erase(std::string_view key) noexcept {
 
     if (it != headers.end())  headers.erase(it, headers.end());
 
-    return HeaderStatus::OK;
+    return ErrorStatus::OK;
 }
 
 std::shared_ptr<Header> Headers::get(std::string_view key) const noexcept {
@@ -86,30 +78,22 @@ bool Headers::has(std::string_view key) const noexcept {
     return get(key) != nullptr;
 }
 
-HeaderStatus Headers::set(std::string_view key, std::string_view value) noexcept {
-    if (iequals(key, "set-cookie")) {
-        auto e = cookies->set(value);
-        if(e != CookieStatus::OK) return HeaderStatus::InvalidCookie;
-        return HeaderStatus::OK;
-    }
-    if (iequals(key, "cookie")) {
-        auto e = cookies->set_cookies(value);
-        if(e != CookieStatus::OK) return HeaderStatus::InvalidCookie;
-        return HeaderStatus::OK;
-    }
+ErrorStatus Headers::set(std::string_view key, std::string_view value) noexcept {
+    if (iequals(key, "set-cookie")) return cookies->set(value);
+    if (iequals(key, "cookie"))     return cookies->set_cookies(value);
 
     if (auto h = get(key)) return h->replace_value(value);
 
     auto new_header = std::make_shared<Header>();
 
     auto e = new_header->set_name(key);
-    if(e != HeaderStatus::OK) return e;
+    if(e != ErrorStatus::OK) return e;
 
     e = new_header->set_value(value);
-    if(e != HeaderStatus::OK) return e;
+    if(e != ErrorStatus::OK) return e;
 
     headers.push_back(std::move(new_header));
-    return HeaderStatus::OK;
+    return ErrorStatus::OK;
 }
 
 std::string Headers::serialize() const {
