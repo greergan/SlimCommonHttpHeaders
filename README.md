@@ -126,6 +126,7 @@ External package dependencies for this library are declared in the [`required_pa
 ```
 SlimCommonHttp
 SlimCommonHttpHeader
+SlimCommonUtilities
 #SlimCommonHttpCookie only required for tests
 SlimCommonHttpCookie
 SlimCommonHttpCookieStore
@@ -133,6 +134,7 @@ SlimCommonHttpCookieStore
 
 - [SlimCommonHttp](https://codeberg.org/greergan/SlimCommonHttp)
 - [SlimCommonHttpHeader](https://codeberg.org/greergan/SlimCommonHttpHeader)
+- [SlimCommonUtilities](https://codeberg.org/greergan/SlimCommonUtilities)
 - [SlimCommonHttpCookie](https://codeberg.org/greergan/SlimCommonHttpCookie) (only required for tests)
 - [SlimCommonHttpCookieStore](https://codeberg.org/greergan/SlimCommonHttpCookieStore)
 

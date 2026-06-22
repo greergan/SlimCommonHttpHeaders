@@ -2,40 +2,15 @@
 #include <slim/common/http/header.h>
 #include <slim/common/http/cookie.h>
 #include <slim/common/http/cookie/store.h>
-
+#include <slim/common/utilities.h>
 
 #include <algorithm>
-#include <cctype>
 
 namespace slim::common::http {
 
 namespace {
-    struct AsciiTables {
-        std::array<char, 256> to_lower{};
-
-        constexpr AsciiTables() noexcept {
-            for (size_t i = 0; i < 256; ++i) {
-                to_lower[i] = (i >= 'A' && i <= 'Z') ? static_cast<char>(i + 32) : static_cast<char>(i);
-            }
-        }
-    };
-
-    constexpr AsciiTables ascii{};
-
-    constexpr bool iequals(std::string_view a, std::string_view b) noexcept {
-        if (a.size() != b.size()) return false;
-        for (size_t i = 0; i < a.size(); ++i)
-            if (ascii.to_lower[static_cast<unsigned char>(a[i])] != static_cast<unsigned char>(b[i])) return false;
-        return true;
-    }
-
-    constexpr bool iiequals(std::string_view a, std::string_view b) noexcept {
-        if (a.size() != b.size()) return false;
-        for (size_t i = 0; i < a.size(); ++i)
-            if (ascii.to_lower[static_cast<unsigned char>(a[i])]
-                != ascii.to_lower[static_cast<unsigned char>(b[i])]) return false;
-        return true;
-    }
+    using slim::common::utilities::iequals;
+    using slim::common::utilities::iiequals;
 } // namespace
 
 ErrorStatus Headers::append(std::string_view key, std::string_view value) noexcept {
